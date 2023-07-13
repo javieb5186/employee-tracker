@@ -111,8 +111,9 @@ function prompt() {
           updateQuestions();
           break;
         case 'Update Employee Role':
-          precedingQuestion(updateEmployeeRole, 1);
-          updateQuestions();
+          updateQuestions().then(() => {
+            precedingQuestion(updateEmployeeRole, 1);
+          });
           break;
         case 'View All Employees':
           displayData('showEmployees');
@@ -160,7 +161,7 @@ async function updateQuestions() {
   })
 }
 
-function precedingQuestion(questions, indexes) {
+ function precedingQuestion(questions, indexes) {
   inquirer.prompt(questions)
   .then(answer => {
     const a = Object.values(answer);
@@ -169,7 +170,6 @@ function precedingQuestion(questions, indexes) {
       logArray.push(a[i]);
     const str = logArray.join(" ");
     console.log(`Updated ${str} to the database`);
-    console.log(a);
     updateDatabase(answer);
   })
   .then(() => prompt());

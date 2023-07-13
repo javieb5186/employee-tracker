@@ -1,7 +1,6 @@
 const mysql = require('mysql2');
 require('dotenv').config();
 const fs = require('fs');
-const { resolve } = require('path');
 
 async function query(text) {
   let myPromise = new Promise(resolve => {
@@ -103,15 +102,12 @@ async function updateDatabase(object) {
 
   const keys = Object.keys(object);
   const values = Object.values(object);
-  console.log("Keys are: " + keys[0]);
-  console.log("Values are: " + values);
 
   switch (keys[0]) {
     case 'departmentName':
       departmentToDatabase(values[0]);
       break;
     case 'roleName':
-      console.log("Values are: " + values[0] + " " + values[1] + " " + values[2]);
       roleToDatabase(values);
       break;
     case 'employeeFName':
@@ -153,7 +149,6 @@ async function updateDatabase(object) {
   }
 
   async function employeeToDatabase(vals) {
-    console.log(vals);
     const v1 = vals[0];
     const v2 = vals[1];
     const v3 = vals[2];
@@ -194,7 +189,6 @@ async function updateDatabase(object) {
     let index = v1.indexOf(" ");
     let first = v1.slice(0, index);
     let last = v1.slice(index + 1, v1.length);
-    console.log(first + " asdfa " + last);
 
     let roleId;
 
@@ -202,7 +196,6 @@ async function updateDatabase(object) {
     .then((value) => roleId = value);
 
     const rId = roleId[0][0].id;
-    console.log(rId);
 
     await db.promise().query(`UPDATE employee SET role_id=${rId} WHERE first_name='${first}' AND last_name='${last}';`);
     db.end();
@@ -234,7 +227,7 @@ async function getData(text) {
         sqlQuery = 'SELECT * FROM employee;';
         break;
       case 'managers':
-        sqlQuery = 'SELECT * FROM employee WHERE manager_id IS NULL;';
+        sqlQuery = 'SELECT * FROM employee';
         break;
       default:
         break;
