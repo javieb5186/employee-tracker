@@ -1,27 +1,28 @@
+// Import all packages
 const mysql = require('mysql2');
 require('dotenv').config();
 const fs = require('fs');
 
+// Used for any GET data from database
 async function query(text) {
   let myPromise = new Promise(resolve => {
     const db = mysql.createConnection(
       {
         host: 'localhost',
-        // MySQL username,
         user: 'root',
-        // MySQL password
         password: process.env.PASSWORD,
         database: 'employees'
       },
     );
     
+    // Read specified sql file and return it as string
     const sqlQuery = fs.readFileSync(`./${text}.sql`).toString();
     
+    // Do a query and return data to display
     db.promise().query(sqlQuery)
-    .then( ([rows,fields]) => {
-      // Work on displaying output as same as in the videos here
-      resolve(displayData(rows));
-    });
+      .then(([rows,fields]) => resolve(displayData(rows)));
+
+    // End connection
     db.end();
   });
 
@@ -29,6 +30,7 @@ async function query(text) {
   return data;
 }
 
+// Create a specific format to display any GET data
 function displayData(rows) {
   const arr = Object.keys(rows);
   const column = Object.keys(rows[0]);
@@ -36,20 +38,19 @@ function displayData(rows) {
   let maxCharacters = [];
 
   str += '\n';
+
+  // Determines what is the largest length for all column data and saves it
   for (let w = 0; w < column.length; w++) {
     let keyLength = column[w].length;
     let valueLength = 0;
     for (let x = 0; x < rows.length; x++) {
       let l = String(rows[x][column[w]]).length;
-      if(l > valueLength)
-        valueLength = l;
+      if(l > valueLength) valueLength = l;
     }
-    if(valueLength > keyLength)
-      maxCharacters.push(valueLength);
-    else
-      maxCharacters.push(keyLength);
+    (valueLength > keyLength) ? maxCharacters.push(valueLength) : maxCharacters.push(keyLength);
   }
 
+  // Columns names have spacing to match a specific format
   for (let x = 0; x < column.length; x++) {
     let name = column[x].length;
     let spaceCount = maxCharacters[x] - name;
@@ -61,6 +62,7 @@ function displayData(rows) {
   }
   str += '\n';
 
+  // Creates dashes to match max characters allowed
   for (let x = 0; x < column.length; x++) {
     let dash = '';
     for (let i = 0; i < maxCharacters[x]; i++) {
@@ -70,6 +72,7 @@ function displayData(rows) {
   } 
   str += '\n';
 
+  // Create row data with spacing to match specific format
   for (let y = 0; y < arr.length; y++) {
     for (let z = 0; z < column.length; z++) {
       let value = String(rows[y][column[z]]).length;
@@ -84,25 +87,27 @@ function displayData(rows) {
   }
   str += '\n';
 
+  // Return final string
   return str;
 }
 
+// Inserts data into a database based on passed parameter
 async function updateDatabase(object) {
   const db = mysql.createConnection(
     {
       host: 'localhost',
-      // MySQL username,
       user: 'root',
-      // MySQL password
       password: process.env.PASSWORD,
       database: 'employees'
     },
     console.log(`\n Connected to database.`)
   );
 
+  // Get key and values
   const keys = Object.keys(object);
   const values = Object.values(object);
 
+  // Depending on first question, execute a specific function
   switch (keys[0]) {
     case 'departmentName':
       departmentToDatabase(values[0]);
@@ -120,15 +125,13 @@ async function updateDatabase(object) {
       break;
   }
 
+  // Inserts a new department into the database
   function departmentToDatabase (val) {
-    db.query(`INSERT INTO department (department_name)
-      VALUES(
-        '${val}'
-      );`
-    )
+    db.query(`INSERT INTO department (department_name) VALUES('${val}');`);
     db.end();
   }
 
+  // Insert a new role into the database
   async function roleToDatabase(vals) {
     const v1 = vals[0];
     const v2 = vals[1];
@@ -139,15 +142,15 @@ async function updateDatabase(object) {
 
     const id = departmentId[0][0].id;
 
-    await db.promise().query(`INSERT INTO role (title, salary, department_id) 
-      VALUES(
+    await db.promise().query(`INSERT INTO role (title, salary, department_id) VALUES(
           '${v1}',
           '${v2}',
           '${id}'
       );`);
-      db.end();
+    db.end();
   }
 
+  // Insert new employee to database
   async function employeeToDatabase(vals) {
     const v1 = vals[0];
     const v2 = vals[1];
@@ -171,8 +174,6 @@ async function updateDatabase(object) {
 
     const eId = employeeId[0][0].id;
 
-
-
     await db.promise().query(`INSERT INTO employee ( first_name, last_name, role_id, manager_id ) VALUES(
         '${v1}',
         '${v2}',
@@ -182,6 +183,7 @@ async function updateDatabase(object) {
       db.end();
   }
 
+  // Update employee role to database
   async function updateRoleToDatabase(vals) {
     const v1 = vals[0];
     const v2 = vals[1];
@@ -202,17 +204,16 @@ async function updateDatabase(object) {
   }
 }
 
+// Returns specific raw data
 async function getData(text) {
   let myPromise = new Promise(resolve => {
     const db = mysql.createConnection(
       {
         host: 'localhost',
-        // MySQL username,
         user: 'root',
-        // MySQL password
         password: process.env.PASSWORD,
         database: 'employees'
-      },
+      }
     );
 
     let sqlQuery;
@@ -234,10 +235,8 @@ async function getData(text) {
     }
     
     db.promise().query(sqlQuery)
-    .then( ([rows,fields]) => {
-      // Work on displaying output as same as in the videos here
-      resolve(rows);
-    });
+    .then( ([rows,fields]) => resolve(rows));
+
     db.end();
   });
 
